@@ -1,0 +1,555 @@
+<!doctype html>
+<html>
+  <meta charset="UTF-8" />
+  <head>
+    <title>TitanBot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      const baseConfiguration = {
+        system_prompt:
+          "The following is a discussion between a human and a knowledgeable and empathetic assistant. You are the Assistant. Please give a single response, in your role as the Assistant. \n\n",
+        user_name: "User",
+        bot_name: "Assistant",
+        generation_parameters: {
+          generate_max_length: 300,
+          no_repeat_ngram_size: 3,
+          sampling_topk: 50,
+          sampling_topp: 0.1,
+          sampling_temperature: 0.7,
+          repetition_penalty: 1.2,
+        },
+      };
+
+      function setConfiguration(configuration) {
+        // write the configuration to local storage
+        // do a shallow merge first.
+        merged_configuration = Object.assign(
+          {},
+          baseConfiguration,
+          configuration,
+        );
+        // then assign the generation_paramers object to the merged generation_paramters objects
+        merged_configuration.generation_parameters = Object.assign(
+          {},
+          baseConfiguration.generation_parameters,
+          configuration.generation_parameters,
+        );
+
+        console.log(
+          "Setting configuration to" + JSON.stringify(merged_configuration),
+        );
+        localStorage.setItem(
+          "configuration",
+          JSON.stringify(merged_configuration),
+        );
+      }
+
+      function getConfiguration() {
+        // read the configuration from local storage
+        return JSON.parse(localStorage.getItem("configuration"));
+      }
+      setConfiguration({});
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --text-color: #f9fafb;
+        --background-color: #181f26;
+        --input-color: #1f2937; /* lighter */
+        --button-color: #374151; /* lighter */
+        --button-hover-color: #4b5563; /* lighter */
+        --scrollbar-color: rgba(155, 155, 155, 0.7);
+        --chatbox-color: #2f3e46;
+        --message-border-colors: #e25e5b, #f29062, #ffc068, #ffe7dc, #71cbe8,
+          #444292;
+        --message-text-color: var(--text-color);
+      }
+
+      body.light {
+        --text-color: #111827;
+        --background-color: #f9fafb;
+        --input-color: #f1f5f9;
+        --button-color: #e5e7eb;
+        --button-hover-color: #d1d5db;
+        --scrollbar-color: rgba(100, 100, 100, 0.7);
+        --chatbox-color: #64748b;
+        --message-border-colors: #e25e5b, #f29062, #ffc068, #ffe7dc, #71cbe8,
+          #444292;
+        --message-text-color: #f9fafb;
+      }
+
+      body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        margin: 0;
+      }
+
+      /* input boxes should always be black on white background */
+      .config-input {
+        color: #000000;
+        background-color: #d1d5db;
+      }
+
+      #chatbox {
+        flex: 1;
+        overflow: auto;
+        margin: 1em;
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: var(--scrollbar-color) transparent; /* For Firefox */
+        background-color: var(--input-color);
+      }
+
+      #chatbox::-webkit-scrollbar {
+        /* For Chrome, Safari, and Opera */
+        width: 12px;
+      }
+
+      #chatbox::-webkit-scrollbar-track {
+        /* For Chrome, Safari, and Opera */
+        background: transparent;
+      }
+
+      #chatbox::-webkit-scrollbar-thumb {
+        /* For Chrome, Safari, and Opera */
+        background: var(--scrollbar-color);
+        border-radius: 50px;
+      }
+
+      #chatbox:hover::-webkit-scrollbar-thumb {
+        /* For Chrome, Safari, and Opera */
+        background: var(--scrollbar-color);
+      }
+
+      .input-style {
+        background-color: var(--button-color);
+        color: var(--text-color);
+      }
+
+      .button-style {
+        background-color: var(--button-color);
+        color: var(--text-color);
+      }
+
+      .button-style:hover {
+        background-color: var(--button-hover-color);
+      }
+
+      .form-style {
+        margin: 1em;
+        background-color: var(--input-color);
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        margin-top: 1em;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-switch .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--button-color);
+        transition: background-color 0.4s;
+        border-radius: 34px;
+      }
+
+      .toggle-switch .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: var(--text-color);
+        transition: transform 0.4s;
+        border-radius: 50%;
+      }
+
+      .toggle-switch .slider-content {
+        position: relative;
+        display: flex;
+        height: 26px;
+        width: 26px;
+        top: 4px;
+        align-items: center;
+        justify-content: center;
+        left: 4px;
+        bottom: 4px;
+        transition: transform 0.4s;
+        border-radius: 50%;
+      }
+
+      .toggle-switch input:checked + .slider:before,
+      .toggle-switch input:checked + .slider .slider-content {
+        transform: translateX(26px);
+      }
+
+      .message {
+        position: relative;
+        background-color: var(--chatbox-color);
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        color: var(--message-text-color);
+        padding: 10px;
+        margin: 10px;
+        z-index: 1;
+      }
+
+      .message.user {
+        margin-left: auto;
+        margin-right: 40px;
+      }
+
+      .message.TitanBot {
+        margin-left: 40px;
+        margin-right: auto;
+      }
+    </style>
+  </head>
+  <body class="dark mx-40">
+    <label class="toggle-switch">
+      <input type="checkbox" onclick="toggleDarkLightMode()" />
+      <span class="slider">
+        <span class="slider-content">
+          <i class="fas fa-moon" id="moon-icon"></i>
+          <i class="fas fa-sun" id="sun-icon" style="display: none"></i>
+        </span>
+      </span>
+    </label>
+
+    <div class="absolute top-0 right-0 m-4 inline-flex">
+      <button
+        id="settings-btn"
+        type="button"
+        class="font-semibold inline-flex items-center justify-center w-full h-full text-sm text-gray-500 hover:text-red-500"
+        aria-expanded="false"
+      >
+        <span>Toggle Settings<i class="fas fa-cog ml-2"></i> </span>
+      </button>
+
+      <form
+        id="config-form"
+        class="z-40 origin-top-right mt-8 absolute right-0 mt-2 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="settings-btn"
+        style="display: none"
+      >
+        <div class="py-1">
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="system-prompt"
+            >System Prompt</label
+          >
+          <input
+            id="system-prompt"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="sampling_temperature"
+            >Temperature</label
+          >
+          <input
+            id="sampling-temperature"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="sampling-topp"
+            >Sampling top p</label
+          >
+          <input
+            id="sampling-topp"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="sampling-topk"
+            >Sampling top k</label
+          >
+          <input
+            id="sampling-topk"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="repetition-penalty"
+            >Repetition penalty</label
+          >
+          <input
+            id="repetition-penalty"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="generate-max-length"
+            >Max generation length</label
+          >
+          <input
+            id="generate-max-length"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+          <label
+            class="block px-4 py-2 text-sm text-gray-700"
+            for="no-repeat-ngram-size"
+            >No repeat ngram size</label
+          >
+          <input
+            id="no-repeat-ngram-size"
+            type="text"
+            class="block px-4 py-2 text-sm w-full config-input"
+          />
+        </div>
+        <div class="py-1">
+          <button
+            type="submit"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            role="menuitem"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <h1 class="text-4xl text-center my-5">TitanBot</h1>
+    <div id="chatbox" class="p-4 shadow-md rounded mb-4">
+      <!-- Chat messages will appear here -->
+    </div>
+    <form
+      onsubmit="event.preventDefault(); sendData()"
+      class="form-style shadow-md rounded px-8 pt-6 pb-8 mb-4 flex"
+    >
+      <input
+        id="message-input"
+        class="input-style shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+        type="text"
+        placeholder="Enter message"
+      />
+      <button
+        type="submit"
+        class="button-style select-none font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 flex justify-center items-center"
+      >
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+    <script>
+      window.onload = onLoad;
+
+      document
+        .getElementById("settings-btn")
+        .addEventListener("click", function () {
+          const form = document.getElementById("config-form");
+          if (form.style.display === "none") {
+            form.style.display = "block";
+          } else {
+            form.style.display = "none";
+          }
+        });
+      document
+        .getElementById("config-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          const configuration = {
+            system_prompt: document.getElementById("system-prompt").value,
+            // get other form inputs similarly
+            generation_parameters: {
+              sampling_temperature: document.getElementById(
+                "sampling-temperature",
+              ).value,
+              sampling_topp: document.getElementById("sampling-topp").value,
+              sampling_topk: document.getElementById("sampling-topk").value,
+              repetition_penalty:
+                document.getElementById("repetition-penalty").value,
+              max_length: document.getElementById("generate-max-length").value,
+              no_repeat_ngram_size: document.getElementById(
+                "no-repeat-ngram-size",
+              ).value,
+            },
+          };
+          // run through the values in configuration. If any of them is the empty string, delete the corresponding key.
+          // This will allow the user to reset the value to the default value.
+          // also iterate through the nested generation_parameters object
+          for (const [key, value] of Object.entries(configuration)) {
+            if (value === "") {
+              delete configuration[key];
+            }
+          }
+          for (const [key, value] of Object.entries(
+            configuration.generation_parameters,
+          )) {
+            if (value === "") {
+              delete configuration.generation_parameters[key];
+            }
+          }
+
+          // Set configuration
+          setConfiguration(configuration);
+
+          // Hide form
+          this.style.display = "none";
+        });
+
+      function onLoad() {
+        let config = getConfiguration();
+
+        document.getElementById("system-prompt").placeholder =
+          config.system_prompt;
+        document.getElementById("sampling-temperature").placeholder =
+          config.generation_parameters.sampling_temperature;
+        document.getElementById("sampling-topp").placeholder =
+          config.generation_parameters.sampling_topp;
+        document.getElementById("sampling-topk").placeholder =
+          config.generation_parameters.sampling_topk;
+        document.getElementById("repetition-penalty").placeholder =
+          config.generation_parameters.repetition_penalty;
+        document.getElementById("generate-max-length").placeholder =
+          config.generation_parameters.generate_max_length;
+        document.getElementById("no-repeat-ngram-size").placeholder =
+          config.generation_parameters.no_repeat_ngram_size;
+
+        setInitialIconStyle();
+      }
+
+      function setInitialIconStyle() {
+        const sunIcon = document.getElementById("sun-icon");
+        const moonIcon = document.getElementById("moon-icon");
+        if (document.body.classList.contains("light")) {
+          moonIcon.style.display = "none";
+          sunIcon.style.display = "inline";
+          sunIcon.style.color = "var(--button-color)";
+        } else {
+          moonIcon.style.display = "inline";
+          sunIcon.style.display = "none";
+          moonIcon.style.color = "var(--button-color)";
+        }
+      }
+
+      function toggleDarkLightMode() {
+        document.body.classList.toggle("light");
+        setInitialIconStyle();
+      }
+
+      const chatbox = document.getElementById("chatbox");
+      const messageInput = document.getElementById("message-input");
+      function preprocessChat(text) {
+        let updatedText = text
+          .replace(/^.?(TitanBot|You|Assistant|Me): /, " ")
+          .replace(/<\/s>/, "");
+        return updatedText;
+      }
+
+      async function sendData() {
+        config = getConfiguration();
+        const text = messageInput.value;
+        messageInput.value = "";
+        addMessage(getConfiguration().user_name, text, "message user");
+
+        const url = "/generate_stream";
+        console.log(url);
+        body = JSON.stringify({
+          text: getChatboxData() + "\nAssistant: ",
+          ...config.generation_parameters,
+        });
+        console.log("API called with \n", getChatboxData());
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body,
+        });
+
+        let messageElem = addMessage(
+          getConfiguration().bot_name,
+          "",
+          "message TitanBot",
+          false,
+        );
+
+        const reader = response.body
+          .pipeThrough(new TextDecoderStream())
+          .getReader();
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          console.log(displayMessage(value));
+          messageElem.innerHTML = preprocessChat(
+            messageElem.innerHTML + displayMessage(value),
+          );
+        }
+      }
+
+      function addMessage(sender, message, classes, finished = true) {
+        const messageElem = document.createElement("p");
+        messageElem.className = classes;
+        const senderElem = document.createElement("b");
+        senderElem.textContent = `${sender}:`;
+        const contentElem = document.createElement("span");
+        contentElem.textContent = finished ? " " + message : "";
+        messageElem.appendChild(senderElem);
+        messageElem.appendChild(contentElem);
+        chatbox.appendChild(messageElem);
+        chatbox.scrollTop = chatbox.scrollHeight;
+        return contentElem;
+      }
+
+      function getChatboxData() {
+        config = getConfiguration();
+        result =
+          config.system_prompt +
+          "\n" +
+          Array.from(chatbox.children)
+            .map(
+              (p) => `${p.firstChild.textContent} ${p.lastChild.textContent}`,
+            )
+            .join("\n");
+        return result;
+      }
+
+      function displayMessage(text) {
+        // replace newline characters with <br>
+        let updatedText = text
+          .replace(/<\/s>/, "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#x27;")
+          .replace(/\//g, "&#x2F;")
+          .replace(/\n/g, "<br/>");
+        return updatedText;
+      }
+    </script>
+  </body>
+</html>
