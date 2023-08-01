@@ -31,13 +31,9 @@ For usage information, tutorials, and usage examples, see the [docs](https://doc
 
 For the pro edition, including multi-gpu inference, int4 quantization, and more. [contact us](mailto:hello@titanml.co)
 
-## :white_check_mark: Requirements ##
-
-Before getting started :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
-
 ## 🚊 Usage
 
-To use the inference server, use the `iris` launcher. To install, run 
+To use the inference server, use the `iris` launcher (you'll need to have docker installed, too). To install, run 
 ```
 pip install titan-iris
 ```
