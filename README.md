@@ -60,8 +60,8 @@ $ docker build -t takeoff .
 $ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/  --entrypoint /bin/bash takeoff
 
 # set the models and device
-export MODEL_NAME=t5-small
-export DEVICE=cuda # or cpu
+export TAKEOFF_MODEL_NAME=t5-small
+export TAKEOFF_DEVICE=cuda # or cpu
 
 # This will run the CT2 convert and then spin up the fastAPI server
 $ sh run.sh 
