@@ -45,7 +45,7 @@ Then, to launch an inference server with a model, run
 ```
 iris takeoff --model tiiuae/falcon-7b-instruct --device cpu --port 8000
 ```
-To run with GPU access, add `--device cuda` instead. 
+You'll be prompted to login. To run with GPU access, add `--device cuda` instead. 
 
 To experiment with the resulting server, navigate to http://localhost:8000/demos/playground, or http://localhost:8000/demos/chat. To see docs on how to query the model, navigate to http://localhost:8000/docs
 
