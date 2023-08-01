@@ -61,7 +61,7 @@ $ cd takeoff
 $ docker build -t takeoff . 
 
 # Spin up the container
-$ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/ -v  --entrypoint /bin/bash takeoff
+$ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/  --entrypoint /bin/bash takeoff
 
 # set the models and device
 export MODEL_NAME=t5-small
