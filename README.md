@@ -2,17 +2,22 @@
 
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
-  <a href="#sparkles-features">Features</a> &#xa0; | &#xa0;
+  <a href="#sparkles-community-features">Features</a> &#xa0; | &#xa0;
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
-  <a href="#checkered_flag-starting">Getting Started</a> &#xa0; &#xa0;
 </p>
 
 <br>
-![image](https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397)
+
+
+<p align="center">
+  <img src="https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397" alt="Image from TitanML">
+</p>
 
 ## :dart: About ##
 
 This is the repository for the community edition of the TitanML Takeoff server. This is a server designed for optimized inference of large language models. 
+
+For more information, see the [docs](https://docs.titanml.co/docs/titan-takeoff/getting-started).
 
 ## :sparkles: Community Features ##
 
@@ -25,6 +30,7 @@ This is the repository for the community edition of the TitanML Takeoff server. 
 :heavy_check_mark: Support for encoder-decoder (T5 family) and decoder models
 
 For the pro edition, including multi-gpu inference, int4 quantization, and more. [contact us](mailto:hello@titanml.co)
+
 ## :white_check_mark: Requirements ##
 
 Before getting started :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
