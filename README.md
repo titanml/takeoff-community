@@ -35,7 +35,21 @@ For the pro edition, including multi-gpu inference, int4 quantization, and more.
 
 Before getting started :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
 
-## :checkered_flag: Working with the container ##
+## 🚊 Usage
+
+To use the inference server, use the `iris` launcher. To install, run 
+```
+pip install titan-iris
+```
+Then, to launch an inference server with a model, run 
+```
+iris takeoff --model tiiuae/falcon-7b-instruct --device cpu --port 8000
+```
+To run with GPU access, add `--device cuda` instead. 
+
+To experiment with the resulting server, navigate to http://localhost:8000/demos/playground, or http://localhost:8000/demos/chat. To see docs on how to query the model, navigate to http://localhost:8000/docs
+
+## :checkered_flag: Developing ##
 
 ```bash
 
