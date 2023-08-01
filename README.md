@@ -49,7 +49,8 @@ You'll be prompted to login. To run with GPU access, add `--device cuda` instead
 
 To experiment with the resulting server, navigate to http://localhost:8000/demos/playground, or http://localhost:8000/demos/chat. To see docs on how to query the model, navigate to http://localhost:8000/docs
 
-## :checkered_flag: Developing ##
+## :checkered_flag: Contributing ##
+To build the development environment, run the following commands
 
 ```bash
 
@@ -57,10 +58,10 @@ To experiment with the resulting server, navigate to http://localhost:8000/demos
 $ cd takeoff
 
 # For dev, build the image first 
-$ docker build -t <myimage> . 
+$ docker build -t takeoff . 
 
 # Spin up the container
-$ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/ -v  --entrypoint /bin/bash myimage:latest
+$ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/ -v  --entrypoint /bin/bash takeoff
 
 # set the models and device
 export MODEL_NAME=t5-small
