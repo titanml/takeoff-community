@@ -8,12 +8,13 @@
 </p>
 
 <br>
+![image](https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397)
 
 ## :dart: About ##
 
-This is the repository for the community edition of the TitanML Takeoff server. This is a server designed for optimized inference of large language models. For single GPU and CPU deployment, we use [CTranslate2](https://opennmt.net/CTranslate2/index.html), an inference engine for transformer models. 
+This is the repository for the community edition of the TitanML Takeoff server. This is a server designed for optimized inference of large language models. 
 
-## :sparkles: Features ##
+## :sparkles: Community Features ##
 
 :heavy_check_mark: Easy deployment and streaming response
 
@@ -23,6 +24,7 @@ This is the repository for the community edition of the TitanML Takeoff server. 
 
 :heavy_check_mark: Support for encoder-decoder (T5 family) and decoder models
 
+For the pro edition, including multi-gpu inference, int4 quantization, and more. [contact us](mailto:hello@titanml.co)
 ## :white_check_mark: Requirements ##
 
 Before getting started :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
