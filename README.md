@@ -33,7 +33,7 @@ For the pro edition, including multi-gpu inference, int4 quantization, and more.
 
 ## 🚊 Usage
 
-To use the inference server, use the `iris` launcher (you'll need to have docker installed, too). To install, run 
+To use the inference server, use the `iris` launcher (you'll need to have docker installed, too). To install iris, run 
 ```
 pip install titan-iris
 ```
