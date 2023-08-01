@@ -4,7 +4,7 @@
 
 
 <p align="center">
-  <img src="https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397" alt="Image from TitanML">
+  <img src="!https://github.com/titanml/takeoff/assets/6034059/5b561d1a-7be3-4258-bd4d-bb670fdb2c1e" alt="Image from TitanML">
 </p>
 
 <p align="center">
