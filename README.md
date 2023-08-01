@@ -13,8 +13,6 @@
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; &#xa0;
 </p>
 
-<br>
-
 ## :dart: About ##
 
 This is the repository for the community edition of the TitanML Takeoff server. This is a server designed for optimized inference of large language models. 
