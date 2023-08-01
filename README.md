@@ -1,10 +1,10 @@
-<h1 align="center">Fabulinus - FastAPI LLM Inference</h1>
+<h1 align="center">TitanML | Titan Takeoff</h1>
 
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
   <a href="#sparkles-features">Features</a> &#xa0; | &#xa0;
   <a href="#white_check_mark-requirements">Requirements</a> &#xa0; | &#xa0;
-  <a href="#checkered_flag-starting">Starting</a> &#xa0; &#xa0;
+  <a href="#checkered_flag-starting">Getting Started</a> &#xa0; &#xa0;
 </p>
 
 <br>
@@ -25,7 +25,7 @@ This is the repository for the community edition of the TitanML Takeoff server. 
 
 ## :white_check_mark: Requirements ##
 
-Before starting :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
+Before getting started :checkered_flag:, you need to have __docker__ and docker cudatoolkit (for gpu) installed. 
 
 ## :checkered_flag: Working with the container ##
 
@@ -38,7 +38,7 @@ $ cd takeoff
 $ docker build -t <myimage> . 
 
 # Spin up the container
-$ docker run -it -p 8000:80 --gpus all -v /home/xxx/.iris_cache/xxx/:/code/models --entrypoint /bin/bash myimage:latest
+$ docker run -it -p 8000:80 --gpus all -v $HOME/.iris_cache/:/code/models/ -v  --entrypoint /bin/bash myimage:latest
 
 # set the models and device
 export MODEL_NAME=t5-small
@@ -52,6 +52,6 @@ $ sh run.sh
 
 You can then use `iris takeoff --infer` to test the inference 
 
-For more details as to how to use the server, check out the 
+For more details as to how to use the server, check out the [docs](https://docs.titanml.co)
 
 <a href="#top">Back to top</a>
