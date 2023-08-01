@@ -1,5 +1,12 @@
 <h1 align="center">TitanML | Takeoff Server</h1>
 
+
+
+
+<p align="center">
+  <img src="https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397" alt="Image from TitanML">
+</p>
+
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
   <a href="#sparkles-community-features">Features</a> &#xa0; | &#xa0;
@@ -7,11 +14,6 @@
 </p>
 
 <br>
-
-
-<p align="center">
-  <img src="https://github.com/titanml/takeoff/assets/6034059/044f1a7e-7deb-46d9-9618-c8327124d397" alt="Image from TitanML">
-</p>
 
 ## :dart: About ##
 
