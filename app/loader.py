@@ -5,6 +5,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2Se
 from huggingface_hub import snapshot_download
 import os
 from tinydb import TinyDB, Query
+from .utils import get_logger
+
+logger = get_logger("loader")
 
 # ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────── #
 #                                            HuggingFace Model Loader Class                                            #
@@ -24,7 +27,7 @@ class HFModelLoader:
 
         self.local_save_file = os.path.join("/code", "models", model_name_or_path)
         self.exists_locally = os.path.exists(self.local_save_file)
-
+        self.used_cache = False
         if self.exists_locally:
             self.model_type = self.detect_model_type(self.local_save_file)
         else:
@@ -84,18 +87,19 @@ class HFModelLoader:
         model.save_pretrained(save_dir)
         tokenizer.save_pretrained(save_dir)
 
-    def check_cache(self, model_name_or_path, cache_loc):
+    def check_cache(self, model_name_or_path, cache_loc, quant_type):
         cache = TinyDB(cache_loc)
         Model = Query()
-        result = cache.search(Model.hf_name == model_name_or_path)
+        result = cache.search((Model.hf_name == model_name_or_path) & (Model.quant_type == quant_type))
 
         if len(result) == 0:
             return model_name_or_path
 
         else:
+            self.used_cache = True
             return f"TitanML/{result[0]['saved_name']}"
 
-    def download_repo(self, model_name_or_path, save_dir, safe=False):
+    def download_repo_or_skip(self, quant_type="int8", safe=False):
         """Download an entire repo from Huggingface, to avoid loading the model into RAM.
 
         Args:
@@ -106,13 +110,22 @@ class HFModelLoader:
         if safe:
             snapshot_patterns = ["*.msgpack", "*.h5", "*.bin", "coreml/**/*"]
         else:
-            snapshot_patterns = ["*.msgpack", "*.h5", "*.safetensors", "coreml/**/*"]
-        model_name_or_path = self.check_cache(model_name_or_path, "/code/app/model_cache_mapping.json")
+            snapshot_patterns = ["*.msgpack", "*.h5", "*.safetensors", "coreml/**/*", "*safetensors*", "*.ot"]
 
-        print(f"Model already converted. Using checkpoint at TitanML/{model_name_or_path}")
+        self.model_name_or_path = self.check_cache(
+            self.model_name_or_path, "/code/app/model_cache_mapping.json", quant_type=quant_type
+        )
+
+        self.local_save_file = os.path.join("/code", "models", self.model_name_or_path)
+
+        if os.path.exists(self.local_save_file):
+            logger.info("Download model detected, skipping download")
+            return None
+
+        logger.info(f"Downloading from {self.model_name_or_path}")
         snapshot_download(
-            repo_id=model_name_or_path,
-            local_dir=save_dir,
+            repo_id=self.model_name_or_path,
+            local_dir=self.local_save_file,
             local_dir_use_symlinks=False,  # force the load to be in the volume mount, not in cache.
             ignore_patterns=snapshot_patterns,
         )

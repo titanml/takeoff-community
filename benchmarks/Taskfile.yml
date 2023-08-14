@@ -1,0 +1,46 @@
+version: "3"
+
+vars:
+  model_name: "google/flan-t5-small"
+  device: "cuda"
+  request_args: -r 24 -t "Whats the capital of the UK"
+
+tasks:
+  start-server:
+    cmds:
+      - model_name={{.model_name}} device={{.device}} docker compose up -d
+
+  stop-server:
+    cmds:
+      - model_name={{.model_name}} device={{.device}} docker compose kill
+
+  build-server:
+    cmds:
+      - model_name={{.model_name}} device={{.device}} docker compose build
+
+  setup:
+    cmds:
+      - task: stop-server
+      - task: build-server
+      - task: start-server
+
+  latency-benchmark:
+    deps: [setup]
+    summary: |
+      Benchmark server latency by sending a number of requests in series to the server.
+    cmds:
+      - echo "benchmarking latency for {{.model_name}} on {{.device}}"
+      - ./scripts/latency.sh {{.request_args}}
+      - task: stop-server
+
+  throughput-benchmark:
+    deps: [setup]
+    summary: |
+      A rough modification of the latency benchmark to send requests in parallel.
+      Gives an estimate of the server throughput.
+      No guarantee that the requests are being sent simultaneously, at any guaranteed rate, etc. 
+      Load will depend on your machine.
+    cmds:
+      - echo "benchmarking throughput for {{.model_name}} on {{.device}}"
+      - ./scripts/latency.sh {{.request_args}} -p
+      - task: stop-server

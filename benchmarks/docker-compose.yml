@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+  takeoff:
+    build:
+      context: $PWD/../
+      dockerfile: $PWD/../Dockerfile
+    environment:
+      - TAKEOFF_MODEL_NAME=${model_name}
+      - TAKEOFF_DEVICE=${device}
+      - TAKEOFF_LOG_LEVEL=DEBUG
+    volumes:
+      - $HOME/.iris_cache:/code/models
+      - $PWD/../app:/code/app
+    ports:
+      - 8000:80
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
