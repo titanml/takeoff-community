@@ -10,6 +10,8 @@
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
   <a href="#sparkles-community-features">Features</a> &#xa0; &#xa0;
+  <a href="https://discord.com/invite/SDnUJSPg7t">Discord</a> &#xa0; &#xa0;
+
 </p>
 
 ## :dart: About ##
@@ -45,6 +47,10 @@ You'll be prompted to login. To run with GPU access, add `--device cuda` instead
 To experiment with the resulting server, navigate to http://localhost:8000/demos/playground, or http://localhost:8000/demos/chat. To see docs on how to query the model, navigate to http://localhost:8000/docs
 
 ## :checkered_flag: Contributing ##
+### Get started
+We welcome community contributions! Please contact us on our [discord](https://discord.com/invite/SDnUJSPg7t) if you have any questions!
+
+### Building a dev environment
 To build the development environment, run the following commands
 
 ```bash
