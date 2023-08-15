@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
-  <a href="#sparkles-community-features">Features</a> &#xa0; &#xa0;
+  <a href="#sparkles-community-features">Features</a> | &#xa0;
   <a href="https://discord.com/invite/SDnUJSPg7t">Discord</a> &#xa0; &#xa0;
 
 </p>
