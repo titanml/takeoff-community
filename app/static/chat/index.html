@@ -10,6 +10,7 @@
           "The following is a discussion between a human and a knowledgeable and empathetic assistant. You are the Assistant. Please give a single response, in your role as the Assistant. \n\n",
         user_name: "User",
         bot_name: "Assistant",
+        host: "http://localhost:8000",
         generation_parameters: {
           generate_max_length: 300,
           no_repeat_ngram_size: 3,
@@ -274,8 +275,10 @@
           >
           <input
             id="sampling-temperature"
-            type="text"
+            type="number"
+            step=0.01
             class="block px-4 py-2 text-sm w-full config-input"
+            value=0.7
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -284,8 +287,12 @@
           >
           <input
             id="sampling-topp"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            step=0.01
+            min=0
+            max=1
+            value=0.1
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -294,8 +301,10 @@
           >
           <input
             id="sampling-topk"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value=50
+            min=0
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -304,8 +313,10 @@
           >
           <input
             id="repetition-penalty"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            step=0.01
+            value=1.2
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -314,8 +325,10 @@
           >
           <input
             id="generate-max-length"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value=300
+            min=1
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -324,8 +337,10 @@
           >
           <input
             id="no-repeat-ngram-size"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value=3
+            min=0
           />
         </div>
         <div class="py-1">
@@ -345,7 +360,6 @@
       <!-- Chat messages will appear here -->
     </div>
     <form
-      onsubmit="event.preventDefault(); sendData()"
       class="form-style shadow-md rounded px-8 pt-6 pb-8 mb-4 flex"
     >
       <input
@@ -355,14 +369,19 @@
         placeholder="Enter message"
       />
       <button
-        type="submit"
+        id="action-button"
+        type="button"
         class="button-style select-none font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 flex justify-center items-center"
+        disabled
+        onclick="handleButtonClick()"
       >
         <i class="fas fa-paper-plane"></i>
       </button>
     </form>
     <script>
       window.onload = onLoad;
+      let ongoingRequest = false;
+      let controller = new AbortController();
 
       document
         .getElementById("settings-btn")
@@ -383,17 +402,17 @@
             system_prompt: document.getElementById("system-prompt").value,
             // get other form inputs similarly
             generation_parameters: {
-              sampling_temperature: document.getElementById(
+              sampling_temperature: Number(document.getElementById(
                 "sampling-temperature",
-              ).value,
-              sampling_topp: document.getElementById("sampling-topp").value,
-              sampling_topk: document.getElementById("sampling-topk").value,
+              ).value),
+              sampling_topp: Number(document.getElementById("sampling-topp").value),
+              sampling_topk: Number(document.getElementById("sampling-topk").value),
               repetition_penalty:
-                document.getElementById("repetition-penalty").value,
-              max_length: document.getElementById("generate-max-length").value,
-              no_repeat_ngram_size: document.getElementById(
+                Number(document.getElementById("repetition-penalty").value),
+              generate_max_length: Number(document.getElementById("generate-max-length").value),
+              no_repeat_ngram_size: Number(document.getElementById(
                 "no-repeat-ngram-size",
-              ).value,
+              ).value),
             },
           };
           // run through the values in configuration. If any of them is the empty string, delete the corresponding key.
@@ -407,7 +426,7 @@
           for (const [key, value] of Object.entries(
             configuration.generation_parameters,
           )) {
-            if (value === "") {
+            if (value === "" || value === 0) {
               delete configuration.generation_parameters[key];
             }
           }
@@ -459,6 +478,69 @@
         setInitialIconStyle();
       }
 
+      function disableTextBox() {
+        messageInput.disabled = true;
+        messageInput.placeholder = "Streaming Response...";
+      }
+
+      function enableTextBox() {
+        messageInput.disabled = false;
+        messageInput.placeholder = "Enter message"
+      }
+
+      function validateEmptyInput() {
+        const buttonIcon = document.querySelector('#action-button');
+        if (messageInput.value === "") {
+          buttonIcon.disabled = true;
+        } else {
+          buttonIcon.disabled = false;
+        }
+      }
+
+      function changeToCancelIcon() {
+        const buttonIcon = document.querySelector('#action-button i');
+        buttonIcon.classList.remove('fa-paper-plane');
+        buttonIcon.classList.add('fa-xmark');
+      }
+
+      function changeToSendIcon() {
+        const buttonIcon = document.querySelector('#action-button i');
+        buttonIcon.classList.remove('fa-xmark');
+        buttonIcon.classList.add('fa-paper-plane');
+      }
+
+      function handleButtonClick() {
+        if (!ongoingRequest) {
+          sendData();
+        } else {
+          cancelRequest();
+        }
+      }
+
+      function cancelRequest() {
+        if (ongoingRequest && controller) {
+          controller.abort();
+        }
+      }
+
+      function submitOnEnter(event) {
+        if (event.which === 13) {
+          if (messageInput.value !== "") {
+            if (!event.repeat) {
+              handleButtonClick();
+            }
+          }
+          event.preventDefault(); // Prevents the addition of a new line in the text field
+        }
+      }
+
+      document
+        .getElementById("message-input")
+        .addEventListener("keydown", submitOnEnter);
+      document
+        .getElementById("message-input")
+        .addEventListener("input", validateEmptyInput);
+
       const chatbox = document.getElementById("chatbox");
       const messageInput = document.getElementById("message-input");
       function preprocessChat(text) {
@@ -469,44 +551,68 @@
       }
 
       async function sendData() {
+        if (ongoingRequest) {
+          console.error("Request is already ongoing.");
+          return;
+        }
+        disableTextBox();
+        changeToCancelIcon();
+        ongoingRequest = true;
+        controller = new AbortController();
+
         config = getConfiguration();
         const text = messageInput.value;
+        const buttonIcon = document.querySelector('#action-button');
         messageInput.value = "";
         addMessage(getConfiguration().user_name, text, "message user");
 
         const url = "/generate_stream";
-        console.log(url);
         body = JSON.stringify({
           text: getChatboxData() + "\nAssistant: ",
           ...config.generation_parameters,
         });
         console.log("API called with \n", getChatboxData());
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: body,
-        });
-
-        let messageElem = addMessage(
-          getConfiguration().bot_name,
-          "",
-          "message TitanBot",
-          false,
-        );
-
-        const reader = response.body
-          .pipeThrough(new TextDecoderStream())
-          .getReader();
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          console.log(displayMessage(value));
-          messageElem.innerHTML = preprocessChat(
-            messageElem.innerHTML + displayMessage(value),
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: body,
+            signal: controller.signal,
+          });
+  
+          let messageElem = addMessage(
+            getConfiguration().bot_name,
+            "",
+            "message TitanBot",
+            false,
           );
+  
+          const reader = response.body
+            .pipeThrough(new TextDecoderStream())
+            .getReader();
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            messageElem.innerHTML = preprocessChat(
+              messageElem.innerHTML + displayMessage(value),
+            );
+          }
+          ongoingRequest = false;
+          enableTextBox();
+          changeToSendIcon();
+          buttonIcon.disabled = true;
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            console.log('Fetch aborted');
+          } else {
+            console.error('Fetch error:', err);
+          }
+          ongoingRequest = false;
+          enableTextBox();
+          changeToSendIcon();
+          buttonIcon.disabled = true;
         }
       }
 

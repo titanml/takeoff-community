@@ -257,12 +257,19 @@ async def generate_stream_helper(
 
     step_results = generator.generate_tokens(prompt_tokens, **params)
 
+    unwanted_patterns = [tokenizer.eos_token, "User", "Assistant"]
     for step_result in step_results:
-        # this is for llama tokenizer to decode with space
+        # Decode the token content
         if step_result.token.startswith("▁"):
-            yield " " + tokenizer.decode(step_result.token_id)  # pre pend a whitie space
+            token_content = " " + tokenizer.decode(step_result.token_id)
         else:
-            yield tokenizer.decode(step_result.token_id)
+            token_content = tokenizer.decode(step_result.token_id)
+        if token_content in unwanted_patterns:
+            break
+        else:
+            for char in token_content:
+                yield char
+                await asyncio.sleep(0)
 
 
 @app.post("/generate_stream")

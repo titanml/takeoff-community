@@ -95,7 +95,7 @@
         color: var(--text-color);
         background-color: var(--input-color);
         width: 100%;
-        height: 1000px;
+        height: calc(100vh - 250px);
       }
 
       /* input boxes should always be black on white background */
@@ -173,6 +173,7 @@
         left: 0;
         right: 0;
         bottom: 0;
+        height: 34px;
         background-color: var(--button-color);
         transition: background-color 0.4s;
         border-radius: 34px;
@@ -282,8 +283,10 @@
           >
           <input
             id="sampling-temperature"
-            type="text"
+            type="number"
+            step="0.01"
             class="block px-4 py-2 text-sm w-full config-input"
+            value="0.9"
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -292,8 +295,12 @@
           >
           <input
             id="sampling-topp"
-            type="text"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1"
             class="block px-4 py-2 text-sm w-full config-input"
+            value="0.9"
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -302,8 +309,10 @@
           >
           <input
             id="sampling-topk"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value="10"
+            min="0"
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -312,7 +321,9 @@
           >
           <input
             id="repetition-penalty"
-            type="text"
+            type="number"
+            step="0.01"
+            value="1.2"
             class="block px-4 py-2 text-sm w-full config-input"
           />
           <label
@@ -322,8 +333,10 @@
           >
           <input
             id="generate-max-length"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value="300"
+            min="1"
           />
           <label
             class="block px-4 py-2 text-sm text-gray-700"
@@ -332,8 +345,10 @@
           >
           <input
             id="no-repeat-ngram-size"
-            type="text"
+            type="number"
             class="block px-4 py-2 text-sm w-full config-input"
+            value="3"
+            min="0"
           />
         </div>
         <div class="py-1">
@@ -351,7 +366,6 @@
     <h1 class="text-4xl text-center my-5">TitanPlayground</h1>
 
     <form
-      onsubmit="event.preventDefault(); sendData()"
       class="form-style shadow-md rounded px-8 pt-6 pb-8 mb-4 flex flex-col"
     >
       <textarea
@@ -360,19 +374,64 @@
         placeholder="Start typing here"
       ></textarea>
       <button
-        type="submit"
+        id="action-button"
+        type="button"
         class="button-style select-none font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 items-start"
+        onclick="handleButtonClick()"
       >
         Complete <i class="fas fa-paper-plane"></i>
       </button>
     </form>
 
     <script>
+      let ongoingRequest = false;
+      let controller = new AbortController();
+      function disableTextArea() {
+        const messageInput = document.getElementById("textarea");
+        messageInput.disabled = true;
+      }
+
+      function enableTextArea() {
+        const messageInput = document.getElementById("textarea");
+        messageInput.disabled = false;
+      }
+
+      function handleButtonClick() {
+        if (!ongoingRequest) {
+          sendData();
+        } else {
+          cancelRequest();
+        }
+      }
+
+      function cancelRequest() {
+        if (ongoingRequest && controller) {
+          controller.abort();
+        }
+      }
+
+      function changeToCancelIcon() {
+        const button = document.getElementById("action-button");
+        const icon = button.querySelector("i");
+        icon.classList.remove("fa-paper-plane");
+        icon.classList.add("fa-xmark");
+        button.textContent = "Cancel ";
+        button.appendChild(icon);
+      }
+
+      function changeToSendIcon() {
+        const button = document.getElementById("action-button");
+        const icon = button.querySelector("i");
+        icon.classList.remove("fa-xmark");
+        icon.classList.add("fa-paper-plane");
+        button.textContent = "Complete ";
+        button.appendChild(icon);
+      }
+
       function submitOnEnter(event) {
         if (event.which === 13 && !event.shiftKey) {
           if (!event.repeat) {
-            const newEvent = new Event("submit", { cancelable: true });
-            event.target.form.dispatchEvent(newEvent);
+            handleButtonClick();
           }
 
           event.preventDefault(); // Prevents the addition of a new line in the text field
@@ -403,17 +462,24 @@
             system_prompt: document.getElementById("system-prompt").value,
             // get other form inputs similarly
             generation_parameters: {
-              sampling_temperature: document.getElementById(
-                "sampling-temperature",
-              ).value,
-              sampling_topp: document.getElementById("sampling-topp").value,
-              sampling_topk: document.getElementById("sampling-topk").value,
-              repetition_penalty:
+              sampling_temperature: Number(
+                document.getElementById("sampling-temperature").value,
+              ),
+              sampling_topp: Number(
+                document.getElementById("sampling-topp").value,
+              ),
+              sampling_topk: Number(
+                document.getElementById("sampling-topk").value,
+              ),
+              repetition_penalty: Number(
                 document.getElementById("repetition-penalty").value,
-              max_length: document.getElementById("generate-max-length").value,
-              no_repeat_ngram_size: document.getElementById(
-                "no-repeat-ngram-size",
-              ).value,
+              ),
+              generate_max_length: Number(
+                document.getElementById("generate-max-length").value,
+              ),
+              no_repeat_ngram_size: Number(
+                document.getElementById("no-repeat-ngram-size").value,
+              ),
             },
           };
           // run through the values in configuration. If any of them is the empty string, delete the corresponding key.
@@ -427,7 +493,7 @@
           for (const [key, value] of Object.entries(
             configuration.generation_parameters,
           )) {
-            if (value === "") {
+            if (value === "" || value === 0) {
               delete configuration.generation_parameters[key];
             }
           }
@@ -456,7 +522,6 @@
           config.generation_parameters.generate_max_length;
         document.getElementById("no-repeat-ngram-size").placeholder =
           config.generation_parameters.no_repeat_ngram_size;
-
         setInitialIconStyle();
       }
 
@@ -486,6 +551,15 @@
       }
 
       async function sendData() {
+        if (ongoingRequest) {
+          console.error("Request is already ongoing.");
+          return;
+        }
+        disableTextArea();
+        changeToCancelIcon();
+        ongoingRequest = true;
+        controller = new AbortController();
+
         config = getConfiguration();
         const textarea = document.getElementById("textarea");
         const text = textarea.value;
@@ -496,35 +570,46 @@
           ...config.generation_parameters,
         });
         console.log("API called with \n", body);
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: body,
-        });
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: body,
+            signal: controller.signal,
+          });
 
-        const reader = response.body
-          .pipeThrough(new TextDecoderStream())
-          .getReader();
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
+          const reader = response.body
+            .pipeThrough(new TextDecoderStream())
+            .getReader();
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            textarea.value += stripEndTokens(value);
+          }
 
-          textarea.value += stripEndTokens(displayMessage(value));
+          // Move the cursor to the end of the textarea
+          textarea.focus();
+          textarea.setSelectionRange(
+            textarea.value.length,
+            textarea.value.length,
+          );
+          ongoingRequest = false;
+          enableTextArea();
+          changeToSendIcon();
+        } catch (err) {
+          if (err.name === "AbortError") {
+            console.log("Fetch aborted");
+          } else {
+            console.error("Fetch error:", err);
+          }
+          ongoingRequest = false;
+          enableTextArea();
+          changeToSendIcon();
         }
-
-        // Move the cursor to the end of the textarea
-        textarea.focus();
-        textarea.setSelectionRange(
-          textarea.value.length,
-          textarea.value.length,
-        );
       }
 
-      function displayMessage(text) {
-        return text;
-      }
     </script>
   </body>
 </html>
