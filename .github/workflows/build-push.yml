@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-fabulinus:
-    runs-on: [self-hosted, arc-runner]
+    runs-on: [ubuntu-latest]
     steps:
       - name: checkout
         uses: actions/checkout@v3
