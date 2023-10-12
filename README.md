@@ -1,4 +1,4 @@
-<h1 align="center">TitanML | Takeoff Server</h1>
+<h1 align="center">TitanML | Takeoff Server - Community Edition</h1>
 
 
 
