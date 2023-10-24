@@ -18,7 +18,7 @@
 
 This is the repository for the community edition of the TitanML Takeoff server. This is a server designed for optimized inference of large language models. 
 
-For usage information, tutorials, and usage examples, see the [docs](https://docs.titanml.co/docs/titan-takeoff/getting-started).
+For usage information, tutorials, and usage examples, see the [docs](https://docs.titanml.co/docs/intro).
 
 ## :sparkles: Community Features ##
 
