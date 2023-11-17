@@ -1,5 +1,5 @@
 # 
-FROM ghcr.io/opennmt/ctranslate2:3.17.1-ubuntu20.04-cuda11.2
+FROM ghcr.io/opennmt/ctranslate2:3.21.0-ubuntu20.04-cuda11.2
 
 # 
 WORKDIR /code
