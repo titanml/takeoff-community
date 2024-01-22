@@ -1,9 +1,0 @@
-model_name: null
-access_token: null
-quant_type: int8
-device: cpu
-log_level: INFO
-max_batch_size: 1
-disable_batching: false
-batch_timeout: 50
-result_sleep_timeout: 50
